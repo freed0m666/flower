@@ -1,6 +1,9 @@
 <?php
 $hostname="http://localhost";
 $title="Мои растения";
+$date_="";
+$content_="";
+$fname_="";
 $p="";
 $mysql = new mysqli("mysql", "root", "qwer", "flower");
 print("<html lang='ru'>
@@ -34,6 +37,7 @@ if (isset($_GET['p'])) {
         print("<a href='$hostname'>home</a>");
     }
     elseif($p=='del') {
+        $i_=0;
         if (isset($_GET['id'])){
             $i_=intval($_GET['id']);
         }
@@ -42,7 +46,7 @@ if (isset($_GET['p'])) {
         print "<script>document.location.href='$hostname';</script>";
     }
 
-} elseif ($p=='') {
+} else {
     print("<a href='$hostname?p=add'>Добавить</a><hr>");
 
     $result = $mysql->query("SELECT `id`,`date`,`image`,`content` FROM flower_table");
@@ -50,7 +54,7 @@ if (isset($_GET['p'])) {
         while ($row = $result->fetch_assoc()) {
             print("<img alt='images' src='images/" . $row["image"] . "' width='640' height='480'><br>");
             print($row["date"] . "||" . $row["content"]);
-            $link=$hostname . '?p=del&id=' . $row["id"];
+            $link = $hostname . '?p=del&id=' . $row["id"];
             print("<a href='$link'>del</a>");
             print("<hr>");
         }
@@ -58,6 +62,6 @@ if (isset($_GET['p'])) {
 }
 $mysql->close();
 print("
-    </body>
+</body>
 </html>
 ");
