@@ -11,11 +11,11 @@ print("<html lang='ru'>
     <title>$title</title>
 </head>
 <body>");
-if (isset($_GET['p'])) {
-    $p = strval($_GET['p']);
+if (isset($_POST['p'])) {
+    $p = strval($_POST['p']);
     if ($p == 'add') {
         print("<a href='$hostname'>home</a><hr>");
-        print("<form action='$hostname' method='get'>
+        print("<form enctype='multipart/form-data' action='$hostname' method='POST'>
                     <p><label for='date'>Дата</label><input type='date' name='date'></p>
                     <p></p><label for='content'>Описание</label><input type='text' name='content'></p>
                     <p><label for='file'>Файл</label><input type='file' name='fname'></p>
@@ -24,15 +24,32 @@ if (isset($_GET['p'])) {
                     </form>");
     }
     elseif ($p=='add_content') {
-        if (isset($_GET['date'])){
-            $date_=strval($_GET['date']);
+        if (isset($_POST['date'])){
+            $date_=strval($_POST['date']);
         }
-        if (isset($_GET['content'])){
-            $content_=strval($_GET['content']);
+        if (isset($_POST['content'])){
+            $content_=strval($_POST['content']);
         }
-        if (isset($_GET['fname'])){
-            $fname_=strval($_GET['fname']);
+        if (isset($_POST['fname'])){
+            $fname_=strval($_POST['fname']);
         }
+        //add file
+        $uploaddir = '/var/www/html/images/';
+        $uploadfile = $uploaddir . basename($_FILES['fname']['name']);
+
+        echo '<pre>';
+        if (move_uploaded_file($_FILES['fname']['tmp_name'], $uploadfile)) {
+            echo "Файл корректен и был успешно загружен.\n";
+        } else {
+            echo "Возможная атака с помощью файловой загрузки!\n";
+        }
+
+        echo 'Некоторая отладочная информация:';
+        print_r($_FILES);
+
+        print "</pre>";
+
+        //add base
         $mysql->query("INSERT INTO flower_table(`date`, `content`, `image`) VALUES('$date_','$content_','$fname_')");
         print("<a href='$hostname'>home</a>");
     }
@@ -47,8 +64,10 @@ if (isset($_GET['p'])) {
     }
 
 } else {
-    print("<a href='$hostname?p=add'>Добавить</a><hr>");
-
+    print("<form name='form1' action='$hostname' method='post'>
+            <input type='hidden' name='p' value='add'>
+            <a href='javascript:void(0)' OnClick='document.form1.submit();'>Добавить</a>
+            </form>");
     $result = $mysql->query("SELECT `id`,`date`,`image`,`content` FROM flower_table");
     if ($result) {
         while ($row = $result->fetch_assoc()) {
@@ -56,11 +75,12 @@ if (isset($_GET['p'])) {
             print($row["date"] . "||" . $row["content"]);
             $link = $hostname . '?p=del&id=' . $row["id"];
             print("<a href='$link'>del</a>");
-            print("<hr>");
+            print("<hr><p>");
         }
     }
 }
 $mysql->close();
+phpinfo();
 print("
 </body>
 </html>
